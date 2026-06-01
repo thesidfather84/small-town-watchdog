@@ -1,0 +1,31 @@
+kind = "web"
+previewPath = "/"
+title = "Small Town Watchdog"
+version = "1.0.0"
+id = "artifacts/small-town-watchdog"
+router = "path"
+
+[[integratedSkills]]
+name = "react-vite"
+version = "1.0.0"
+
+[[services]]
+name = "web"
+paths = [ "/" ]
+localPort = 25371
+
+[services.development]
+run = "pnpm --filter @workspace/small-town-watchdog run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/small-town-watchdog", "run", "build" ]
+publicDir = "artifacts/small-town-watchdog/dist/public"
+serve = "static"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "25371"
+BASE_PATH = "/"

@@ -1,0 +1,2376 @@
+openapi: 3.1.0
+info:
+  # Do not change the title, if the title changes, the import paths will be broken
+  title: Api
+  version: 0.1.0
+  description: Small Town Watchdog API
+servers:
+  - url: /api
+    description: Base API path
+tags:
+  - name: health
+    description: Health operations
+  - name: entities
+    description: Government entities
+  - name: sources
+    description: Source URLs
+  - name: documents
+    description: Public records documents
+  - name: alerts
+    description: Alerts feed
+  - name: stats
+    description: Dashboard statistics
+  - name: compare
+    description: Year comparison
+  - name: elections
+    description: Elections and ballot items
+  - name: source-registry
+    description: National source registry and community submissions
+  - name: locations
+    description: State and county/parish location registry
+  - name: civic-items
+    description: Civic items (budgets, meetings, elections, etc.)
+  - name: error-reports
+    description: User-submitted error reports
+  - name: civic-item-flags
+    description: Public and admin item flagging system
+  - name: reminders
+  - name: email-subscribers
+    description: Optional civic-update email signups
+
+paths:
+  /healthz:
+    get:
+      operationId: healthCheck
+      tags: [health]
+      summary: Health check
+      description: Returns server health status
+      responses:
+        "200":
+          description: Healthy
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HealthStatus"
+
+  /entities:
+    get:
+      operationId: listEntities
+      tags: [entities]
+      summary: List all government entities
+      parameters:
+        - name: state
+          in: query
+          schema:
+            type: string
+          description: Filter by state code (e.g. LA, MS)
+        - name: city
+          in: query
+          schema:
+            type: string
+          description: Filter by city name (case-insensitive)
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Entity"
+    post:
+      operationId: createEntity
+      tags: [entities]
+      summary: Create a government entity
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/EntityInput"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Entity"
+
+  /entities/{id}:
+    get:
+      operationId: getEntity
+      tags: [entities]
+      summary: Get a government entity
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Entity"
+        "404":
+          description: Not found
+    patch:
+      operationId: updateEntity
+      tags: [entities]
+      summary: Update a government entity
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/EntityPatch"
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Entity"
+        "404":
+          description: Not found
+    delete:
+      operationId: deleteEntity
+      tags: [entities]
+      summary: Delete a government entity
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted
+        "404":
+          description: Not found
+
+  /sources:
+    get:
+      operationId: listSources
+      tags: [sources]
+      summary: List source URLs
+      parameters:
+        - name: entityId
+          in: query
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Source"
+    post:
+      operationId: createSource
+      tags: [sources]
+      summary: Create a source URL
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SourceInput"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Source"
+
+  /sources/{id}:
+    patch:
+      operationId: updateSource
+      tags: [sources]
+      summary: Update a source URL
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SourcePatch"
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Source"
+        "404":
+          description: Not found
+    delete:
+      operationId: deleteSource
+      tags: [sources]
+      summary: Delete a source URL
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted
+        "404":
+          description: Not found
+
+  /documents:
+    get:
+      operationId: listDocuments
+      tags: [documents]
+      summary: List public records documents
+      parameters:
+        - name: entityId
+          in: query
+          schema:
+            type: integer
+        - name: year
+          in: query
+          schema:
+            type: integer
+        - name: type
+          in: query
+          schema:
+            type: string
+        - name: alertCategory
+          in: query
+          schema:
+            type: string
+        - name: redFlagLevel
+          in: query
+          schema:
+            type: string
+        - name: limit
+          in: query
+          schema:
+            type: integer
+        - name: offset
+          in: query
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Document"
+    post:
+      operationId: createDocument
+      tags: [documents]
+      summary: Create a public records document
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/DocumentInput"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Document"
+
+  /documents/{id}:
+    get:
+      operationId: getDocument
+      tags: [documents]
+      summary: Get a document
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Document"
+        "404":
+          description: Not found
+    patch:
+      operationId: updateDocument
+      tags: [documents]
+      summary: Update a document
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/DocumentPatch"
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Document"
+        "404":
+          description: Not found
+    delete:
+      operationId: deleteDocument
+      tags: [documents]
+      summary: Delete a document
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted
+        "404":
+          description: Not found
+
+  /documents/{id}/summarize:
+    post:
+      operationId: summarizeDocument
+      tags: [documents]
+      summary: Generate AI plain-English summary for a document
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Document"
+        "404":
+          description: Not found
+
+  /alerts:
+    get:
+      operationId: listAlerts
+      tags: [alerts]
+      summary: Get the alerts feed
+      parameters:
+        - name: entityId
+          in: query
+          schema:
+            type: integer
+        - name: category
+          in: query
+          schema:
+            type: string
+        - name: redFlagLevel
+          in: query
+          schema:
+            type: string
+        - name: limit
+          in: query
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Alert"
+
+  /stats:
+    get:
+      operationId: getDashboardStats
+      tags: [stats]
+      summary: Get dashboard statistics for a selected location (civic_items only)
+      parameters:
+        - name: stateCode
+          in: query
+          required: false
+          schema:
+            type: string
+          description: Two-letter state code (e.g. LA, MS)
+        - name: countyParish
+          in: query
+          required: false
+          schema:
+            type: string
+          description: County or parish name (e.g. St. Tammany Parish)
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DashboardStats"
+
+  /diagnostics:
+    get:
+      operationId: getDiagnostics
+      tags: [stats]
+      summary: Get real database counts for admin diagnostics
+      parameters:
+        - name: stateCode
+          in: query
+          required: false
+          schema:
+            type: string
+        - name: countyParish
+          in: query
+          required: false
+          schema:
+            type: string
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DiagnosticsData"
+
+  /validate-sources:
+    post:
+      operationId: validateSources
+      tags: [documents]
+      summary: Validate all document source URLs (admin)
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ValidateSourcesResult"
+
+  /multi-year-timeline:
+    get:
+      operationId: getMultiYearTimeline
+      tags: [compare]
+      summary: Get year-by-year document timeline for an entity
+      parameters:
+        - name: entityId
+          in: query
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MultiYearTimeline"
+        "404":
+          description: Not found
+
+  /compare:
+    get:
+      operationId: compareYears
+      tags: [compare]
+      summary: Compare two years of data for an entity
+      parameters:
+        - name: entityId
+          in: query
+          required: true
+          schema:
+            type: integer
+        - name: year1
+          in: query
+          required: true
+          schema:
+            type: integer
+        - name: year2
+          in: query
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/YearComparison"
+
+  /elections:
+    get:
+      operationId: listElections
+      tags: [elections]
+      summary: List elections
+      parameters:
+        - name: state
+          in: query
+          schema:
+            type: string
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Election"
+    post:
+      operationId: createElection
+      tags: [elections]
+      summary: Create an election
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ElectionInput"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Election"
+
+  /elections/{id}:
+    get:
+      operationId: getElection
+      tags: [elections]
+      summary: Get an election with its ballot items
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Election"
+        "404":
+          description: Not found
+    patch:
+      operationId: updateElection
+      tags: [elections]
+      summary: Update an election
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ElectionPatch"
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Election"
+        "404":
+          description: Not found
+    delete:
+      operationId: deleteElection
+      tags: [elections]
+      summary: Delete an election
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: No content
+        "404":
+          description: Not found
+
+  /elections/{id}/ballot-items:
+    get:
+      operationId: listBallotItems
+      tags: [elections]
+      summary: List ballot items for an election
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/BallotItem"
+    post:
+      operationId: createBallotItem
+      tags: [elections]
+      summary: Create a ballot item for an election
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/BallotItemInput"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BallotItem"
+
+  /ballot-items/{id}:
+    patch:
+      operationId: updateBallotItem
+      tags: [elections]
+      summary: Update a ballot item
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/BallotItemPatch"
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BallotItem"
+        "404":
+          description: Not found
+    delete:
+      operationId: deleteBallotItem
+      tags: [elections]
+      summary: Delete a ballot item
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: No content
+        "404":
+          description: Not found
+
+  /ballot-items/{id}/explain:
+    post:
+      operationId: explainBallotItem
+      tags: [elections]
+      summary: AI-generate a neutral plain-English explanation of a ballot item
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BallotItem"
+        "404":
+          description: Not found
+
+  /source-registry:
+    get:
+      operationId: listSourceRegistry
+      tags: [source-registry]
+      summary: List source registry entries
+      parameters:
+        - name: state
+          in: query
+          schema:
+            type: string
+        - name: city
+          in: query
+          schema:
+            type: string
+        - name: entityType
+          in: query
+          schema:
+            type: string
+        - name: verificationStatus
+          in: query
+          schema:
+            type: string
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/SourceRegistry"
+    post:
+      operationId: createSourceRegistry
+      tags: [source-registry]
+      summary: Create a source registry entry
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SourceRegistryInput"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SourceRegistry"
+
+  /source-registry/{id}:
+    get:
+      operationId: getSourceRegistry
+      tags: [source-registry]
+      summary: Get a source registry entry
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SourceRegistry"
+        "404":
+          description: Not found
+    patch:
+      operationId: updateSourceRegistry
+      tags: [source-registry]
+      summary: Update a source registry entry
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SourceRegistryPatch"
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SourceRegistry"
+        "404":
+          description: Not found
+    delete:
+      operationId: deleteSourceRegistry
+      tags: [source-registry]
+      summary: Delete a source registry entry
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted
+        "404":
+          description: Not found
+
+  /source-submissions:
+    get:
+      operationId: listSourceSubmissions
+      tags: [source-registry]
+      summary: List community source submissions (admin)
+      parameters:
+        - name: status
+          in: query
+          schema:
+            type: string
+          description: Filter by status (pending, approved, rejected)
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/SourceSubmission"
+    post:
+      operationId: createSourceSubmission
+      tags: [source-registry]
+      summary: Submit a source for community review
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SourceSubmissionInput"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SourceSubmission"
+
+  /source-submissions/{id}:
+    patch:
+      operationId: updateSourceSubmission
+      tags: [source-registry]
+      summary: Approve or reject a source submission (admin)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SourceSubmissionPatch"
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SourceSubmission"
+        "404":
+          description: Not found
+
+  /coverage/{state}/{city}:
+    get:
+      operationId: getCityCoverage
+      tags: [source-registry]
+      summary: Get source coverage status for a city
+      parameters:
+        - name: state
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: city
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CityCoverage"
+
+  /locations:
+    get:
+      operationId: listLocations
+      tags: [locations]
+      summary: List state/county/parish locations
+      parameters:
+        - name: state
+          in: query
+          schema:
+            type: string
+          description: Filter by state code (e.g. LA, MS)
+        - name: county
+          in: query
+          schema:
+            type: string
+          description: Filter by county/parish name
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Location"
+
+  /locations/{id}:
+    get:
+      operationId: getLocation
+      tags: [locations]
+      summary: Get a single location by id
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Location"
+        "404":
+          description: Not found
+
+  /civic-items:
+    get:
+      operationId: listCivicItems
+      tags: [civic-items]
+      summary: List approved civic items for a location
+      parameters:
+        - name: locationId
+          in: query
+          schema:
+            type: integer
+        - name: stateCode
+          in: query
+          schema:
+            type: string
+        - name: countyParish
+          in: query
+          schema:
+            type: string
+        - name: itemType
+          in: query
+          schema:
+            type: string
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/CivicItem"
+
+  /admin/civic-items:
+    get:
+      operationId: listAdminCivicItems
+      tags: [civic-items]
+      summary: Admin — list all civic items regardless of review status
+      parameters:
+        - name: locationId
+          in: query
+          schema:
+            type: integer
+        - name: stateCode
+          in: query
+          schema:
+            type: string
+        - name: countyParish
+          in: query
+          schema:
+            type: string
+        - name: adminReviewStatus
+          in: query
+          schema:
+            type: string
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/CivicItem"
+
+  /admin/civic-items/{id}:
+    patch:
+      operationId: updateCivicItemReview
+      tags: [civic-items]
+      summary: Admin — update review status of a civic item
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CivicItemPatch"
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CivicItem"
+        "404":
+          description: Not found
+
+  /civic-item-flags:
+    post:
+      operationId: createCivicItemFlag
+      tags: [civic-item-flags]
+      summary: Flag a civic item (public)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CivicItemFlagInput"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [success]
+                properties:
+                  success:
+                    type: boolean
+
+  /admin/civic-item-flags:
+    get:
+      operationId: listAdminCivicItemFlags
+      tags: [civic-item-flags]
+      summary: Admin — list open flags (or filter by status)
+      parameters:
+        - name: status
+          in: query
+          schema:
+            type: string
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/CivicItemFlag"
+
+  /admin/civic-item-flags/{id}:
+    patch:
+      operationId: updateCivicItemFlag
+      tags: [civic-item-flags]
+      summary: Admin — resolve or dismiss a flag
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CivicItemFlagPatch"
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CivicItemFlag"
+        "404":
+          description: Not found
+
+  /error-reports:
+    post:
+      operationId: createErrorReport
+      tags: [error-reports]
+      summary: Submit an error report for a civic item
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ErrorReportInput"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorReport"
+
+  /admin/error-reports:
+    get:
+      operationId: listAdminErrorReports
+      tags: [error-reports]
+      summary: Admin — list all error reports
+      parameters:
+        - name: status
+          in: query
+          schema:
+            type: string
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ErrorReport"
+
+  /admin/error-reports/{id}:
+    patch:
+      operationId: updateErrorReport
+      tags: [error-reports]
+      summary: Admin — update error report status
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ErrorReportPatch"
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorReport"
+        "404":
+          description: Not found
+
+  /reminders:
+    get:
+      operationId: listReminders
+      tags: [reminders]
+      summary: List reminders for a device
+      parameters:
+        - name: deviceId
+          in: query
+          required: true
+          schema:
+            type: string
+          description: The user's device identifier
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Reminder"
+        "400":
+          description: Missing deviceId
+
+    post:
+      operationId: createReminder
+      tags: [reminders]
+      summary: Create a reminder subscription
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ReminderInput"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Reminder"
+        "400":
+          description: Missing required fields
+
+  /reminders/{id}:
+    delete:
+      operationId: deleteReminder
+      tags: [reminders]
+      summary: Delete a reminder by id
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Deleted reminder
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Reminder"
+        "404":
+          description: Not found
+
+  /email-subscribers:
+    post:
+      operationId: createEmailSubscriber
+      tags: [email-subscribers]
+      summary: Opt in to neutral civic update emails
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/EmailSubscriberInput"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [success]
+                properties:
+                  success:
+                    type: boolean
+
+  /email-subscribers/unsubscribe:
+    post:
+      operationId: unsubscribeEmail
+      tags: [email-subscribers]
+      summary: Unsubscribe an email from civic updates
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/EmailUnsubscribeInput"
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [success]
+                properties:
+                  success:
+                    type: boolean
+
+  /admin/email-subscribers/counts:
+    get:
+      operationId: listEmailSubscriberCounts
+      tags: [email-subscribers]
+      summary: Active subscriber counts grouped by state and parish/county (admin)
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/EmailSubscriberCount"
+
+components:
+  schemas:
+    HealthStatus:
+      type: object
+      properties:
+        status:
+          type: string
+      required:
+        - status
+
+    Entity:
+      type: object
+      required: [id, name, type, createdAt]
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        type:
+          type: string
+        state:
+          type: ["string", "null"]
+        city:
+          type: ["string", "null"]
+        county:
+          type: ["string", "null"]
+        location:
+          type: ["string", "null"]
+        website:
+          type: ["string", "null"]
+        description:
+          type: ["string", "null"]
+        isActive:
+          type: boolean
+        documentCount:
+          type: ["integer", "null"]
+        createdAt:
+          type: string
+
+    EntityInput:
+      type: object
+      required: [name, type]
+      properties:
+        name:
+          type: string
+          minLength: 1
+        type:
+          type: string
+        state:
+          type: string
+        city:
+          type: string
+        county:
+          type: string
+        location:
+          type: string
+        website:
+          type: string
+        description:
+          type: string
+        isActive:
+          type: boolean
+
+    EntityPatch:
+      type: object
+      properties:
+        name:
+          type: string
+          minLength: 1
+        type:
+          type: string
+        state:
+          type: string
+        city:
+          type: string
+        county:
+          type: string
+        location:
+          type: string
+        website:
+          type: string
+        description:
+          type: string
+        isActive:
+          type: boolean
+
+    Source:
+      type: object
+      required: [id, entityId, url, name, sourceType, isActive, createdAt]
+      properties:
+        id:
+          type: integer
+        entityId:
+          type: integer
+        url:
+          type: string
+        name:
+          type: string
+        sourceType:
+          type: string
+        isActive:
+          type: boolean
+        lastChecked:
+          type: ["string", "null"]
+        createdAt:
+          type: string
+
+    SourceInput:
+      type: object
+      required: [entityId, url, name, sourceType]
+      properties:
+        entityId:
+          type: integer
+        url:
+          type: string
+        name:
+          type: string
+        sourceType:
+          type: string
+        isActive:
+          type: boolean
+
+    SourcePatch:
+      type: object
+      properties:
+        url:
+          type: string
+        name:
+          type: string
+        sourceType:
+          type: string
+        isActive:
+          type: boolean
+
+    Document:
+      type: object
+      required: [id, entityId, title, docType, year, createdAt]
+      properties:
+        id:
+          type: integer
+        entityId:
+          type: integer
+        entityName:
+          type: ["string", "null"]
+        sourceId:
+          type: ["integer", "null"]
+        title:
+          type: string
+        docType:
+          type: string
+        year:
+          type: integer
+        content:
+          type: ["string", "null"]
+        sourceUrl:
+          type: ["string", "null"]
+        sourceName:
+          type: ["string", "null"]
+        pulledAt:
+          type: ["string", "null"]
+        plainSummary:
+          type: ["string", "null"]
+        eli12Summary:
+          type: ["string", "null"]
+        isAiGenerated:
+          type: boolean
+        alertCategory:
+          type: ["string", "null"]
+        redFlagLevel:
+          type: ["string", "null"]
+        amountInvolved:
+          type: ["number", "null"]
+        sourceStatus:
+          type: string
+          description: "valid | broken | missing | pending_review"
+        lastVerifiedAt:
+          type: ["string", "null"]
+        createdAt:
+          type: string
+        updatedAt:
+          type: string
+
+    DocumentInput:
+      type: object
+      required: [entityId, title, docType, year]
+      properties:
+        entityId:
+          type: integer
+        sourceId:
+          type: integer
+        title:
+          type: string
+          minLength: 1
+        docType:
+          type: string
+        year:
+          type: integer
+        content:
+          type: string
+        sourceUrl:
+          type: string
+        sourceName:
+          type: string
+        plainSummary:
+          type: string
+        eli12Summary:
+          type: string
+        alertCategory:
+          type: string
+        redFlagLevel:
+          type: string
+        amountInvolved:
+          type: number
+
+    DocumentPatch:
+      type: object
+      properties:
+        title:
+          type: string
+        docType:
+          type: string
+        year:
+          type: integer
+        content:
+          type: string
+        sourceUrl:
+          type: string
+        sourceName:
+          type: string
+        plainSummary:
+          type: string
+        eli12Summary:
+          type: string
+        alertCategory:
+          type: string
+        redFlagLevel:
+          type: string
+        amountInvolved:
+          type: number
+        sourceStatus:
+          type: string
+
+    Alert:
+      type: object
+      required: [id, documentId, entityId, entityName, title, category, redFlagLevel, createdAt]
+      properties:
+        id:
+          type: integer
+        documentId:
+          type: integer
+        entityId:
+          type: integer
+        entityName:
+          type: string
+        title:
+          type: string
+        plainSummary:
+          type: ["string", "null"]
+        category:
+          type: string
+        redFlagLevel:
+          type: string
+        sourceUrl:
+          type: ["string", "null"]
+        isAiGenerated:
+          type: boolean
+        year:
+          type: integer
+        createdAt:
+          type: string
+
+    DashboardStats:
+      type: object
+      required: [totalEntities, totalDocuments, totalAlerts, redFlagCount, yellowFlagCount, recentAlerts, documentsByType, documentsByYear]
+      properties:
+        totalEntities:
+          type: integer
+          description: Count of entities with approved civic_items for this location
+        totalDocuments:
+          type: integer
+          description: Count of approved civic_items for this location
+        totalAlerts:
+          type: integer
+          description: Count of approved civic_items with red or yellow flag
+        redFlagCount:
+          type: integer
+          description: Count of approved civic_items with red_flag_level=red
+        yellowFlagCount:
+          type: integer
+          description: Count of approved civic_items with red_flag_level=yellow
+        hasLocation:
+          type: boolean
+          description: Whether a location filter was applied
+        recentAlerts:
+          type: array
+          items:
+            $ref: "#/components/schemas/Alert"
+        documentsByType:
+          type: array
+          items:
+            $ref: "#/components/schemas/CountByLabel"
+        documentsByYear:
+          type: array
+          items:
+            $ref: "#/components/schemas/CountByLabel"
+
+    DiagnosticsData:
+      type: object
+      required: [locationsCount, entitiesCount, sourcesCount, civicItemsTotal, civicItemsApproved, civicItemsPending, civicItemsRed, civicItemsYellow, civicItemsGreen, lastScraperRun]
+      properties:
+        locationsCount:
+          type: integer
+        entitiesCount:
+          type: integer
+        sourcesCount:
+          type: integer
+        validSources:
+          type: integer
+        brokenSources:
+          type: integer
+        civicItemsTotal:
+          type: integer
+        civicItemsApproved:
+          type: integer
+        civicItemsPending:
+          type: integer
+        civicItemsRed:
+          type: integer
+        civicItemsYellow:
+          type: integer
+        civicItemsGreen:
+          type: integer
+        lastScraperRun:
+          type: string
+          nullable: true
+
+    CountByLabel:
+      type: object
+      required: [label, count]
+      properties:
+        label:
+          type: string
+        count:
+          type: integer
+
+    YearComparison:
+      type: object
+      required: [entityId, entityName, year1, year2, changes, aiSummary]
+      properties:
+        entityId:
+          type: integer
+        entityName:
+          type: string
+        year1:
+          type: integer
+        year2:
+          type: integer
+        changes:
+          type: array
+          items:
+            $ref: "#/components/schemas/YearChange"
+        aiSummary:
+          type: string
+        year1DocumentCount:
+          type: integer
+        year2DocumentCount:
+          type: integer
+
+    ValidateSourcesResult:
+      type: object
+      required: [checked, valid, broken, missing, results]
+      properties:
+        checked:
+          type: integer
+        valid:
+          type: integer
+        broken:
+          type: integer
+        missing:
+          type: integer
+        results:
+          type: array
+          items:
+            $ref: "#/components/schemas/SourceValidationResult"
+
+    SourceValidationResult:
+      type: object
+      required: [documentId, title, status]
+      properties:
+        documentId:
+          type: integer
+        title:
+          type: string
+        sourceUrl:
+          type: ["string", "null"]
+        status:
+          type: string
+
+    MultiYearTimeline:
+      type: object
+      required: [entityId, entityName, years]
+      properties:
+        entityId:
+          type: integer
+        entityName:
+          type: string
+        years:
+          type: array
+          items:
+            $ref: "#/components/schemas/YearSummary"
+
+    YearSummary:
+      type: object
+      required: [year, documentCount, hasData, brokenSourceCount, missingSourceCount, documents]
+      properties:
+        year:
+          type: integer
+        documentCount:
+          type: integer
+        hasData:
+          type: boolean
+        totalAmount:
+          type: ["number", "null"]
+        brokenSourceCount:
+          type: integer
+        missingSourceCount:
+          type: integer
+        documents:
+          type: array
+          items:
+            type: object
+            required: [id, title, docType, sourceStatus]
+            properties:
+              id:
+                type: integer
+              title:
+                type: string
+              docType:
+                type: string
+              amountInvolved:
+                type: ["number", "null"]
+              sourceStatus:
+                type: string
+              sourceUrl:
+                type: ["string", "null"]
+
+    YearChange:
+      type: object
+      required: [category, label, year1Value, year2Value, changePercent, redFlagLevel]
+      properties:
+        category:
+          type: string
+        label:
+          type: string
+        year1Value:
+          type: ["number", "null"]
+        year2Value:
+          type: ["number", "null"]
+        changePercent:
+          type: ["number", "null"]
+        changeDescription:
+          type: ["string", "null"]
+        redFlagLevel:
+          type: string
+
+    Election:
+      type: object
+      required: [id, title, electionDate, electionType, electionState, createdAt]
+      properties:
+        id:
+          type: integer
+        title:
+          type: string
+        electionDate:
+          type: string
+        earlyVotingStart:
+          type: ["string", "null"]
+        earlyVotingEnd:
+          type: ["string", "null"]
+        description:
+          type: ["string", "null"]
+        entityId:
+          type: ["integer", "null"]
+        electionType:
+          type: string
+        electionState:
+          type: string
+        ballotItemCount:
+          type: integer
+        createdAt:
+          type: string
+
+    ElectionInput:
+      type: object
+      required: [title, electionDate, electionType]
+      properties:
+        title:
+          type: string
+        electionDate:
+          type: string
+        earlyVotingStart:
+          type: string
+        earlyVotingEnd:
+          type: string
+        description:
+          type: string
+        entityId:
+          type: integer
+        electionType:
+          type: string
+        electionState:
+          type: string
+
+    ElectionPatch:
+      type: object
+      properties:
+        title:
+          type: string
+        electionDate:
+          type: string
+        earlyVotingStart:
+          type: string
+        earlyVotingEnd:
+          type: string
+        description:
+          type: string
+        entityId:
+          type: integer
+        electionType:
+          type: string
+        electionState:
+          type: string
+
+    BallotItem:
+      type: object
+      required: [id, electionId, title, itemType, isAiGenerated, createdAt]
+      properties:
+        id:
+          type: integer
+        electionId:
+          type: integer
+        title:
+          type: string
+        itemType:
+          type: string
+        description:
+          type: ["string", "null"]
+        officialText:
+          type: ["string", "null"]
+        yesMeans:
+          type: ["string", "null"]
+        noMeans:
+          type: ["string", "null"]
+        whoPays:
+          type: ["string", "null"]
+        amountInvolved:
+          type: ["string", "null"]
+        duration:
+          type: ["string", "null"]
+        receivingBody:
+          type: ["string", "null"]
+        changeType:
+          type: ["string", "null"]
+        sourceUrl:
+          type: ["string", "null"]
+        isAiGenerated:
+          type: boolean
+        createdAt:
+          type: string
+
+    BallotItemInput:
+      type: object
+      required: [title, itemType]
+      properties:
+        title:
+          type: string
+        itemType:
+          type: string
+        description:
+          type: string
+        officialText:
+          type: string
+        yesMeans:
+          type: string
+        noMeans:
+          type: string
+        whoPays:
+          type: string
+        amountInvolved:
+          type: string
+        duration:
+          type: string
+        receivingBody:
+          type: string
+        changeType:
+          type: string
+        sourceUrl:
+          type: string
+
+    BallotItemPatch:
+      type: object
+      properties:
+        title:
+          type: string
+        itemType:
+          type: string
+        description:
+          type: string
+        officialText:
+          type: string
+        yesMeans:
+          type: string
+        noMeans:
+          type: string
+        whoPays:
+          type: string
+        amountInvolved:
+          type: string
+        duration:
+          type: string
+        receivingBody:
+          type: string
+        changeType:
+          type: string
+        sourceUrl:
+          type: string
+
+    SourceRegistry:
+      type: object
+      required: [id, state, entityName, entityType, sourceUrl, sourceCategory, sourcePlatform, verificationStatus, isActive, createdAt]
+      properties:
+        id:
+          type: integer
+        state:
+          type: string
+        county:
+          type: ["string", "null"]
+        city:
+          type: ["string", "null"]
+        entityName:
+          type: string
+        entityType:
+          type: string
+        sourceUrl:
+          type: string
+        sourceCategory:
+          type: string
+        sourcePlatform:
+          type: string
+        verificationStatus:
+          type: string
+        lastChecked:
+          type: ["string", "null"]
+        lastSuccessfulUpdate:
+          type: ["string", "null"]
+        notes:
+          type: ["string", "null"]
+        isActive:
+          type: boolean
+        createdAt:
+          type: string
+
+    SourceRegistryInput:
+      type: object
+      required: [state, entityName, entityType, sourceUrl, sourceCategory, sourcePlatform]
+      properties:
+        state:
+          type: string
+        county:
+          type: string
+        city:
+          type: string
+        entityName:
+          type: string
+        entityType:
+          type: string
+        sourceUrl:
+          type: string
+        sourceCategory:
+          type: string
+        sourcePlatform:
+          type: string
+        verificationStatus:
+          type: string
+        notes:
+          type: string
+        isActive:
+          type: boolean
+
+    SourceRegistryPatch:
+      type: object
+      properties:
+        state:
+          type: string
+        county:
+          type: string
+        city:
+          type: string
+        entityName:
+          type: string
+        entityType:
+          type: string
+        sourceUrl:
+          type: string
+        sourceCategory:
+          type: string
+        sourcePlatform:
+          type: string
+        verificationStatus:
+          type: string
+        notes:
+          type: string
+        isActive:
+          type: boolean
+        lastChecked:
+          type: string
+        lastSuccessfulUpdate:
+          type: string
+
+    SourceSubmission:
+      type: object
+      required: [id, state, city, entityName, entityType, sourceUrl, sourceCategory, status, createdAt]
+      properties:
+        id:
+          type: integer
+        state:
+          type: string
+        county:
+          type: ["string", "null"]
+        city:
+          type: string
+        entityName:
+          type: string
+        entityType:
+          type: string
+        sourceUrl:
+          type: string
+        sourceCategory:
+          type: string
+        submitterNote:
+          type: ["string", "null"]
+        status:
+          type: string
+        reviewNote:
+          type: ["string", "null"]
+        createdAt:
+          type: string
+
+    SourceSubmissionInput:
+      type: object
+      required: [state, city, entityName, entityType, sourceUrl, sourceCategory]
+      properties:
+        state:
+          type: string
+        county:
+          type: string
+        city:
+          type: string
+        entityName:
+          type: string
+        entityType:
+          type: string
+        sourceUrl:
+          type: string
+        sourceCategory:
+          type: string
+        submitterNote:
+          type: string
+
+    SourceSubmissionPatch:
+      type: object
+      properties:
+        status:
+          type: string
+        reviewNote:
+          type: string
+
+    EmailSubscriberInput:
+      type: object
+      required: [email]
+      properties:
+        email:
+          type: string
+          format: email
+        stateCode:
+          type: string
+        countyParish:
+          type: string
+        signupSource:
+          type: string
+
+    EmailUnsubscribeInput:
+      type: object
+      required: [email]
+      properties:
+        email:
+          type: string
+          format: email
+
+    EmailSubscriberCount:
+      type: object
+      required: [stateCode, countyParish, count]
+      properties:
+        stateCode:
+          type: ["string", "null"]
+        countyParish:
+          type: ["string", "null"]
+        count:
+          type: integer
+
+    CityCoverage:
+      type: object
+      required: [state, city, coverageLevel, verifiedSourceCount, totalSourceCount, categoriesCovered]
+      properties:
+        state:
+          type: string
+        city:
+          type: string
+        coverageLevel:
+          type: string
+        verifiedSourceCount:
+          type: integer
+        totalSourceCount:
+          type: integer
+        categoriesCovered:
+          type: array
+          items:
+            type: string
+        entityTypeCoverage:
+          type: object
+          additionalProperties:
+            type: string
+
+    Location:
+      type: object
+      required: [id, stateCode, stateName, countyParish, countyType, isActive, coverageStatus, createdAt]
+      properties:
+        id:
+          type: integer
+        stateCode:
+          type: string
+        stateName:
+          type: string
+        countyParish:
+          type: string
+        countyType:
+          type: string
+        isActive:
+          type: boolean
+        coverageStatus:
+          type: string
+        createdAt:
+          type: string
+
+    CivicItem:
+      type: object
+      required: [id, itemType, title, redFlagLevel, sourceStatus, adminReviewStatus, createdAt, updatedAt]
+      properties:
+        id:
+          type: integer
+        locationId:
+          type: ["integer", "null"]
+        entityId:
+          type: ["integer", "null"]
+        stateCode:
+          type: ["string", "null"]
+        countyParish:
+          type: ["string", "null"]
+        scope:
+          type: string
+          enum: [statewide, county_parish, city, entity]
+        itemType:
+          type: string
+        title:
+          type: string
+        eventDate:
+          type: ["string", "null"]
+        meetingDate:
+          type: ["string", "null"]
+        electionDate:
+          type: ["string", "null"]
+        deadlineDate:
+          type: ["string", "null"]
+        amountInvolved:
+          type: ["string", "null"]
+        voteResult:
+          type: ["string", "null"]
+        sourceTitle:
+          type: ["string", "null"]
+        sourceAgency:
+          type: ["string", "null"]
+        sourceUrl:
+          type: ["string", "null"]
+        sourceDate:
+          type: ["string", "null"]
+        originalText:
+          type: ["string", "null"]
+        aiSummary:
+          type: ["string", "null"]
+        aiSummaryNotice:
+          type: ["string", "null"]
+        redFlagLevel:
+          type: string
+        sourceStatus:
+          type: string
+        adminReviewStatus:
+          type: string
+        lastVerifiedAt:
+          type: ["string", "null"]
+        createdAt:
+          type: string
+        updatedAt:
+          type: string
+
+    CivicItemPatch:
+      type: object
+      properties:
+        adminReviewStatus:
+          type: string
+
+    ErrorReport:
+      type: object
+      required: [id, reportType, status, createdAt]
+      properties:
+        id:
+          type: integer
+        civicItemId:
+          type: ["integer", "null"]
+        reportType:
+          type: string
+        message:
+          type: ["string", "null"]
+        status:
+          type: string
+        createdAt:
+          type: string
+
+    ErrorReportInput:
+      type: object
+      required: [reportType]
+      properties:
+        civicItemId:
+          type: integer
+        reportType:
+          type: string
+        message:
+          type: string
+
+    ErrorReportPatch:
+      type: object
+      properties:
+        status:
+          type: string
+
+    CivicItemFlag:
+      type: object
+      required: [id, civicItemId, reason, status, createdAt]
+      properties:
+        id:
+          type: integer
+        civicItemId:
+          type: integer
+        reason:
+          type: string
+        notes:
+          type: ["string", "null"]
+        flaggedBy:
+          type: ["string", "null"]
+        status:
+          type: string
+        resolvedBy:
+          type: ["string", "null"]
+        resolvedAt:
+          type: ["string", "null"]
+        createdAt:
+          type: string
+        updatedAt:
+          type: string
+        itemTitle:
+          type: ["string", "null"]
+        itemSourceUrl:
+          type: ["string", "null"]
+
+    CivicItemFlagInput:
+      type: object
+      required: [civicItemId, reason]
+      properties:
+        civicItemId:
+          type: integer
+        reason:
+          type: string
+        notes:
+          type: string
+        flaggedBy:
+          type: string
+
+    CivicItemFlagPatch:
+      type: object
+      properties:
+        status:
+          type: string
+        resolvedBy:
+          type: string
+
+    Reminder:
+      type: object
+      required: [id, userDeviceId, reminderType, remindEarlyVoting, remindDayBefore, remindTwoHoursBefore, remindPollClosing, createdAt]
+      properties:
+        id:
+          type: integer
+        userDeviceId:
+          type: string
+        civicItemId:
+          type: ["integer", "null"]
+        reminderType:
+          type: string
+        remindEarlyVoting:
+          type: boolean
+        remindDayBefore:
+          type: boolean
+        remindTwoHoursBefore:
+          type: boolean
+        remindPollClosing:
+          type: boolean
+        createdAt:
+          type: string
+
+    ReminderInput:
+      type: object
+      required: [userDeviceId]
+      properties:
+        userDeviceId:
+          type: string
+        civicItemId:
+          type: integer
+        reminderType:
+          type: string
+        remindEarlyVoting:
+          type: boolean
+        remindDayBefore:
+          type: boolean
+        remindTwoHoursBefore:
+          type: boolean
+        remindPollClosing:
+          type: boolean
+
