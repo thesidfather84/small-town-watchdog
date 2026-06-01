@@ -2,19 +2,81 @@ import { pgTable, text, serial, timestamp, boolean } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod/v4";
 
+// Entity types — aligned with lib/db/src/entity-taxonomy.ts
+// The DB column is plain text; this list is for validation and documentation only.
 export const ENTITY_TYPES = [
-  "city-government",
+  // State level
+  "secretary-of-state",
+  "state-elections-office",
+  "state-legislature",
+  "governor-office",
+  "attorney-general",
+  "state-auditor",
+  "state-treasurer",
+  "ethics-commission",
+  "campaign-finance",
+  "dept-revenue",
+  "dept-transportation",
+  "dept-education",
+  "dept-health",
+  "environmental-quality",
+  "state-police",
+  // County / Parish level
   "county-government",
-  "parish-government",
-  "school-board",
+  "parish-government",       // alias kept for backwards compat
+  "county-council",
+  "clerk-of-court",
+  "registrar-of-voters",
+  "election-office",         // alias kept for backwards compat
   "sheriff-office",
-  "police-department",
-  "election-office",
+  "district-attorney",
+  "tax-assessor",
+  "tax-collector",
+  "county-treasurer",
+  "public-works",
   "planning-zoning",
-  "special-district",
-  "utility-district",
-  "drainage-district",
+  "permits-inspections",
+  "code-enforcement",
+  "emergency-management",
+  "coroner",
+  "animal-control",
+  "parish-jail",
+  // City / Municipal level
+  "city-government",
+  "city-council",
+  "city-clerk",
+  "police-department",
+  "fire-department",
+  "city-public-works",
+  "city-planning-zoning",
+  "city-permits",
+  "city-code-enforcement",
+  "municipal-court",
+  "city-finance",
+  // School / Education
+  "school-board",
+  "school-district",
+  "superintendent-office",
+  // Special Districts
   "fire-district",
+  "water-district",
+  "sewer-district",
+  "drainage-district",
+  "levee-district",
+  "recreation-district",
+  "library-board",
+  "hospital-district",
+  "port-authority",
+  "airport-authority",
+  "transit-authority",
+  "mosquito-abatement",
+  "housing-authority",
+  "utility-district",
+  "special-district",        // generic fallback
+  // Courts
+  "district-court",
+  "justice-of-peace",
+  "constable",
 ] as const;
 
 export const SOURCE_CATEGORIES = [
@@ -27,6 +89,10 @@ export const SOURCE_CATEGORIES = [
   "contract-page",
   "bid-page",
   "news-page",
+  "report-page",
+  "financial-page",
+  "planning-page",
+  "permit-page",
 ] as const;
 
 export const SOURCE_PLATFORMS = [
