@@ -19,20 +19,16 @@ import Privacy from "@/pages/privacy";
 import AiDisclosure from "@/pages/ai-disclosure";
 import Discover from "@/pages/discover";
 import Welcome from "@/pages/welcome";
-import { hasVisited } from "@/lib/visited";
-import { useSelectedLocation } from "@/hooks/useFollowedEntities";
-
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: { staleTime: 30_000, retry: 1 },
   },
 });
 
+// Always show the dog welcome screen at /
+// Returning users with a location see their status and tap "Enter App" to go to the feed.
 function RootPage() {
-  const { selectedLocation } = useSelectedLocation();
-  // Show welcome if first visit OR no location selected
-  if (!hasVisited() || !selectedLocation) return <Redirect to="/welcome" />;
-  return <Dashboard />;
+  return <Redirect to="/welcome" />;
 }
 
 function Router() {

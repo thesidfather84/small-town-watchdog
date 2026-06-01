@@ -64,6 +64,9 @@ attached_assets/
 # Vercel
 .vercel/
 
+# Claude Code local settings (machine-specific, not for GitHub)
+.claude/
+
 # Python cache
 __pycache__/
 *.pyc
