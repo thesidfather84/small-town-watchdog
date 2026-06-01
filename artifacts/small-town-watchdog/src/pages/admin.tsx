@@ -1034,6 +1034,96 @@ function DiagnosticsTab() {
       )}
 
       <EmailSubscribersPanel />
+      <CrawlerLogPanel />
+    </div>
+  );
+}
+
+// ─── Crawler Log Panel ────────────────────────────────────────────────────────
+
+function CrawlerLogPanel() {
+  const { data: runs = [], isLoading, refetch } = useQuery<any[]>({
+    queryKey: ["admin-scraper-runs"],
+    queryFn: () => fetchAdminJSON("/api/admin/scraper-runs"),
+    staleTime: 30_000,
+  });
+
+  return (
+    <div className="flex flex-col gap-2">
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <Activity className="w-4 h-4 text-primary" />
+          <h3 className="text-sm font-bold">Crawler Run Log</h3>
+        </div>
+        <button onClick={() => refetch()} className="p-1.5 text-muted-foreground hover:text-foreground">
+          <RefreshCw className={`w-3.5 h-3.5 ${isLoading ? "animate-spin" : ""}`} />
+        </button>
+      </div>
+
+      {runs.length === 0 ? (
+        <p className="text-xs text-muted-foreground px-1 py-2">
+          No crawler runs recorded yet. Run the pipeline using:
+          <code className="ml-1 px-1.5 py-0.5 rounded bg-muted text-[10px] font-mono">
+            python python_engine/main.py run-daily
+          </code>
+        </p>
+      ) : (
+        <Card className="bg-card border-border/50 overflow-hidden">
+          <table className="w-full text-xs">
+            <thead>
+              <tr className="border-b border-border/40 text-[10px] uppercase tracking-wider text-muted-foreground">
+                <th className="px-2 py-2 text-left font-semibold">Started</th>
+                <th className="px-2 py-2 text-left font-semibold">State</th>
+                <th className="px-2 py-2 text-right font-semibold">Checked</th>
+                <th className="px-2 py-2 text-right font-semibold">Created</th>
+                <th className="px-2 py-2 text-right font-semibold">Approved</th>
+                <th className="px-2 py-2 text-right font-semibold">Pending</th>
+                <th className="px-2 py-2 text-right font-semibold">Broken</th>
+                <th className="px-2 py-2 text-right font-semibold">Skip</th>
+                <th className="px-2 py-2 text-right font-semibold">Dur</th>
+                <th className="px-2 py-2 text-left font-semibold">Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              {runs.slice(0, 20).map((r, i) => (
+                <tr key={i} className="border-t border-border/30 hover:bg-muted/10">
+                  <td className="px-2 py-1.5 font-mono text-[10px] text-muted-foreground whitespace-nowrap">
+                    {new Date(r.startedAt).toLocaleString()}
+                  </td>
+                  <td className="px-2 py-1.5 font-mono text-foreground">{r.state ?? "ALL"}</td>
+                  <td className="px-2 py-1.5 text-right font-mono">{r.sourcesChecked}</td>
+                  <td className="px-2 py-1.5 text-right font-mono font-semibold text-foreground">{r.itemsCreated}</td>
+                  <td className="px-2 py-1.5 text-right font-mono text-emerald-400">{r.itemsAutoApproved}</td>
+                  <td className="px-2 py-1.5 text-right font-mono text-amber-400">{r.itemsPending}</td>
+                  <td className="px-2 py-1.5 text-right font-mono text-red-400">{r.sourcesBroken}</td>
+                  <td className="px-2 py-1.5 text-right font-mono text-muted-foreground">{r.itemsDuplicateSkipped}</td>
+                  <td className="px-2 py-1.5 text-right font-mono text-muted-foreground">{r.durationSeconds}s</td>
+                  <td className="px-2 py-1.5">
+                    <span className={`px-1.5 py-0.5 rounded text-[10px] font-semibold ${
+                      r.status === "completed" ? "bg-emerald-500/15 text-emerald-400" :
+                      r.status === "failed"    ? "bg-red-500/15 text-red-400" :
+                      "bg-amber-400/15 text-amber-400"
+                    }`}>{r.status}</span>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </Card>
+      )}
+
+      <div className="flex flex-col gap-1 p-3 rounded-lg bg-card border border-border/40">
+        <p className="text-[11px] font-semibold text-foreground">Refresh Civic Data</p>
+        <p className="text-[10px] text-muted-foreground">
+          Run the pipeline to pull new records from all verified official sources:
+        </p>
+        <code className="mt-1 px-2 py-1.5 rounded bg-muted text-[10px] font-mono text-foreground block">
+          python python_engine/main.py run-daily --state LA
+        </code>
+        <p className="text-[10px] text-muted-foreground/60 mt-1">
+          Only public government sources are checked. No web scraping of private sites.
+        </p>
+      </div>
     </div>
   );
 }

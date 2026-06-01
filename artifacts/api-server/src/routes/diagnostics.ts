@@ -94,4 +94,27 @@ router.get("/diagnostics", asyncHandler(async (req, res): Promise<void> => {
   });
 }));
 
+/**
+ * GET /admin/scraper-runs
+ * Returns the last 50 crawler run records with full log details.
+ */
+router.get("/admin/scraper-runs", asyncHandler(async (req, res): Promise<void> => {
+  const runs = await db
+    .select()
+    .from(scraperRunsTable)
+    .orderBy(desc(scraperRunsTable.startedAt))
+    .limit(50);
+
+  res.json(
+    runs.map((r) => ({
+      ...r,
+      startedAt:  r.startedAt.toISOString(),
+      finishedAt: r.finishedAt.toISOString(),
+      durationSeconds: Math.round(
+        (r.finishedAt.getTime() - r.startedAt.getTime()) / 1000
+      ),
+    }))
+  );
+}));
+
 export default router;

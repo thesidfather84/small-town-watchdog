@@ -3,7 +3,7 @@ import { useListAlerts, useListEntities } from "@workspace/api-client-react";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { AlertCard } from "@/components/shared/AlertCard";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Bell, Filter, MapPin, Clock, RefreshCw } from "lucide-react";
+import { Bell, Filter, MapPin, Clock, RefreshCw, Search, X } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Link } from "wouter";
 import { useSelectedLocation } from "@/hooks/useFollowedEntities";
@@ -36,6 +36,7 @@ const FLAG_LEVELS = [
 export default function Alerts() {
   const [category, setCategory] = useState("");
   const [flagLevel, setFlagLevel] = useState("");
+  const [searchQuery, setSearchQuery] = useState("");
   const { selectedLocation } = useSelectedLocation();
   const { refreshAppData } = useRefreshAppData();
 
@@ -55,13 +56,21 @@ export default function Alerts() {
   }, [allEntities]);
 
   const alerts = useMemo(() => {
+    const q = searchQuery.trim().toLowerCase();
     if (!selectedLocation) return [];
     return rawAlerts.filter((a) => {
       const entity = entityMap.get(a.entityId);
       if (!entity) return false;
-      return matchesSelectedLocation(entity, selectedLocation);
+      if (!matchesSelectedLocation(entity, selectedLocation)) return false;
+      if (!q) return true;
+      return (
+        a.title?.toLowerCase().includes(q) ||
+        a.plainSummary?.toLowerCase().includes(q) ||
+        a.entityName?.toLowerCase().includes(q) ||
+        a.category?.toLowerCase().includes(q)
+      );
     });
-  }, [rawAlerts, selectedLocation, entityMap]);
+  }, [rawAlerts, selectedLocation, entityMap, searchQuery]);
 
   const locationLabel = selectedLocation
     ? `${selectedLocation.countyParish}, ${selectedLocation.stateName}`
@@ -123,6 +132,26 @@ export default function Alerts() {
             {freshnessText}
           </p>
         )}
+
+        {/* Search box */}
+        <div className="relative">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground pointer-events-none" />
+          <input
+            type="text"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            placeholder="Search records, agencies, summaries…"
+            className="w-full h-9 pl-9 pr-8 rounded-lg bg-card border border-border/60 text-sm text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:border-primary/50 transition-colors"
+          />
+          {searchQuery && (
+            <button
+              onClick={() => setSearchQuery("")}
+              className="absolute right-2.5 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+            >
+              <X className="w-3.5 h-3.5" />
+            </button>
+          )}
+        </div>
 
         <div className="flex gap-2 items-center">
           <Filter className="w-4 h-4 text-muted-foreground shrink-0" />
