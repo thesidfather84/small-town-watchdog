@@ -21,6 +21,7 @@ import exportRouter from "./export";
 import emailSubscribersRouter from "./email-subscribers";
 import civicItemFlagsRouter from "./civic-item-flags";
 import remindersRouter from "./reminders";
+import searchRouter from "./search";
 
 const router: IRouter = Router();
 
@@ -46,5 +47,6 @@ router.use(exportRouter);
 router.use(emailSubscribersRouter);
 router.use(civicItemFlagsRouter);
 router.use(remindersRouter);
+router.use(searchRouter);
 
 export default router;
