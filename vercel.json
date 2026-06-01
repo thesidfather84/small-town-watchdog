@@ -3,7 +3,7 @@
 
   "installCommand": "pnpm install",
   "buildCommand": "pnpm --filter @workspace/small-town-watchdog run build",
-  "outputDirectory": "artifacts/small-town-watchdog/dist/public",
+  "outputDirectory": "artifacts/small-town-watchdog/dist",
   "framework": null,
 
   "rewrites": [
