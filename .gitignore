@@ -60,3 +60,16 @@ attached_assets/
 
 # Environment secrets
 .env
+
+# Vercel
+.vercel/
+
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+python_engine/.venv/
+.venv/
+*.egg-info/
