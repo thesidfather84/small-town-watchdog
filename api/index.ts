@@ -1,12 +1,6 @@
-// Test: dynamic import of express inside handler (not bundled at module init)
-export default async function handler(req: any, res: any) {
-  try {
-    const { default: express } = await import("express");
-    res.setHeader("Content-Type", "application/json");
-    res.end(JSON.stringify({ ok: true, express_type: typeof express }));
-  } catch (e: any) {
-    res.setHeader("Content-Type", "application/json");
-    res.statusCode = 500;
-    res.end(JSON.stringify({ ok: false, error: e.message, stack: e.stack?.slice(0, 500) }));
-  }
-}
+// Vercel serverless entry point.
+// Imports the pre-compiled bundle (built by artifacts/api-server/build.mjs via buildCommand).
+// All npm deps including express are compiled into dist/app.mjs — no external resolution needed.
+// @ts-ignore — .mjs has no type declarations
+import app from "../artifacts/api-server/dist/app.mjs";
+export default app;
