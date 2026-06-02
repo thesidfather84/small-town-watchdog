@@ -1,34 +1,10 @@
 {
   "version": 2,
-
   "installCommand": "pnpm install",
-  "buildCommand": "pnpm --filter @workspace/small-town-watchdog run build",
-  "outputDirectory": "artifacts/small-town-watchdog/dist/public",
+  "buildCommand": "pnpm run build",
+  "outputDirectory": "dist",
   "framework": null,
-
   "rewrites": [
-    { "source": "/api/(.*)", "destination": "/api/index" },
     { "source": "/((?!api/).*)", "destination": "/index.html" }
-  ],
-
-  "functions": {
-    "api/index.ts": {
-      "maxDuration": 30
-    }
-  },
-
-  "headers": [
-    {
-      "source": "/api/(.*)",
-      "headers": [
-        { "key": "Cache-Control", "value": "no-store, no-cache, must-revalidate" }
-      ]
-    },
-    {
-      "source": "/assets/(.*)",
-      "headers": [
-        { "key": "Cache-Control", "value": "public, max-age=31536000, immutable" }
-      ]
-    }
   ]
 }
