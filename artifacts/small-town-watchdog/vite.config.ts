@@ -12,24 +12,11 @@ const port = Math.max(1, Number(rawPort) || 5173);
 // Override with BASE_PATH env var when hosting at a sub-path.
 const basePath = process.env.BASE_PATH ?? "/";
 
-// Replit-only dev plugins — only load inside Replit environment
-const replitPlugins =
-  process.env.NODE_ENV !== "production" && process.env.REPL_ID != null
-    ? await Promise.all([
-        import("@replit/vite-plugin-runtime-error-modal").then((m) => m.default()),
-        import("@replit/vite-plugin-cartographer").then((m) =>
-          m.cartographer({ root: path.resolve(import.meta.dirname, "..") })
-        ),
-        import("@replit/vite-plugin-dev-banner").then((m) => m.devBanner()),
-      ])
-    : [];
-
 export default defineConfig({
   base: basePath,
   plugins: [
     react(),
     tailwindcss(),
-    ...replitPlugins,
   ],
   resolve: {
     alias: {

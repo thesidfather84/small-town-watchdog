@@ -76,3 +76,6 @@ __pycache__/
 python_engine/.venv/
 .venv/
 *.egg-info/
+
+.vercel
+.env.vercel.local
