@@ -1,6 +1,6 @@
-// Isolation test: bare express only, no DB
+// Test: import express but use raw Node handler
 import express from "express";
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const app: any = express();
-app.use("/api/healthz", (_req: any, res: any) => res.json({ ok: true, step: "express-only" }));
-export default app;
+export default function handler(req: any, res: any) {
+  res.setHeader("Content-Type", "application/json");
+  res.end(JSON.stringify({ ok: true, express_type: typeof express, express_fn: typeof express === "function" }));
+}
