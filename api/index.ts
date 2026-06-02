@@ -1,10 +1,19 @@
 // Vercel serverless entry point.
-// Loads the pre-compiled CJS bundle — require() can load .cjs files.
-// includeFiles in vercel.json copies dist/ into the function bundle.
+// Loads pre-compiled CJS bundle. includeFiles in vercel.json copies dist/.
 export default async function handler(req: any, res: any) {
+  // Debug route — shows what DATABASE_URL the function sees at runtime
+  if (req.url?.includes("/_db_check")) {
+    const raw = process.env.DATABASE_URL ?? "NOT_SET";
+    const host = raw.match(/@([^/]+)\//)?.[1] ?? "parse_failed";
+    res.statusCode = 200;
+    res.setHeader("Content-Type", "application/json");
+    res.end(JSON.stringify({ db_host: host, db_set: raw !== "NOT_SET" }));
+    return;
+  }
+
   try {
-    const base = "../artifacts/api-server/dist";
-    const mod = await import(`${base}/app.cjs`);
+    const distDir = "../artifacts/api-server/dist";
+    const mod = await import(`${distDir}/app.cjs`);
     const app = mod.default ?? mod;
     await new Promise<void>((resolve, reject) => {
       res.on("finish", resolve);
