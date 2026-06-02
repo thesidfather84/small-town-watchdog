@@ -1,20 +1,12 @@
-import pino from "pino";
-
-const isProduction = process.env.NODE_ENV === "production";
-
-export const logger = pino({
-  level: process.env.LOG_LEVEL ?? "info",
-  redact: [
-    "req.headers.authorization",
-    "req.headers.cookie",
-    "res.headers['set-cookie']",
-  ],
-  ...(isProduction
-    ? {}
-    : {
-        transport: {
-          target: "pino-pretty",
-          options: { colorize: true },
-        },
-      }),
-});
+// Simple console-based logger — no worker threads, works in any serverless environment
+type LogFn = (obj: unknown, msg?: string) => void;
+const make = (fn: (...args: unknown[]) => void) => (obj: unknown, msg?: string) => {
+  if (msg) fn(msg, obj);
+  else fn(obj);
+};
+export const logger = {
+  info:  make(console.log),
+  warn:  make(console.warn),
+  error: make(console.error),
+  debug: make(console.debug),
+};
