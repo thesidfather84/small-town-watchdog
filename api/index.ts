@@ -1,11 +1,11 @@
 // Vercel serverless entry point.
-// Uses a non-literal dynamic import so esbuild doesn't re-bundle dist/app.mjs.
-// includeFiles in vercel.json copies dist/ (including pino workers) into the bundle.
+// Loads the pre-compiled CJS bundle — require() can load .cjs files.
+// includeFiles in vercel.json copies dist/ into the function bundle.
 export default async function handler(req: any, res: any) {
   try {
-    // Non-literal path prevents esbuild static analysis — loaded from includeFiles at runtime
     const base = "../artifacts/api-server/dist";
-    const { default: app } = await import(`${base}/app.mjs`);
+    const mod = await import(`${base}/app.cjs`);
+    const app = mod.default ?? mod;
     await new Promise<void>((resolve, reject) => {
       res.on("finish", resolve);
       res.on("error", reject);
